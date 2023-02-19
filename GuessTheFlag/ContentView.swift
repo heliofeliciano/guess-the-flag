@@ -2,7 +2,11 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var showingScore = false
+    @State private var resetingGame = false
     @State private var scoreTitle = ""
+    @State private var scoreTitleFinal = ""
+    @State private var scoreUser = 0
+    @State private var numberOfPlays = 0
     
     @State private var countries: [String] = ["Estonia", "France", "Germany", "Ireland", "Italy", "Monaco", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"].shuffled()
     @State private var correctAnswer = Int.random(in: 0...2)
@@ -44,7 +48,7 @@ struct ContentView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 Spacer()
                 Spacer()
-                Text("Score: ???")
+                Text("Score: \(scoreUser)")
                     .foregroundColor(.white)
                     .font(.title.bold())
                 Spacer()
@@ -54,15 +58,28 @@ struct ContentView: View {
         .alert(scoreTitle, isPresented: $showingScore) {
             Button("Continue", action: askQuestion)
         } message: {
-            Text("Your score is ???")
+            Text("Your score is \(scoreUser)")
+        }
+        .alert(scoreTitleFinal, isPresented: $resetingGame) {
+            Button("Reset", action: resetGame)
         }
     }
     
     func flagTapped(_ number: Int) {
+        numberOfPlays += 1
+        
+        guard numberOfPlays < 4 else {
+            scoreTitleFinal = "The point is final. Continue to restart the game"
+            resetingGame = true
+            return
+        }
+        
         if number == correctAnswer {
             scoreTitle = "Correct"
+            scoreUser += 1
         } else {
-            scoreTitle = "Wrong"
+            scoreTitle = "Wrong! That’s the flag of \(countries[number])"
+            scoreUser -= 1
         }
         
         showingScore = true
@@ -71,6 +88,12 @@ struct ContentView: View {
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+    }
+    
+    func resetGame() {
+        scoreUser = 0
+        numberOfPlays = 0
+        showingScore = false
     }
 }
 
